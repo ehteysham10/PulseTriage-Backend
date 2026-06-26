@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
+import cors from 'cors';
 import connectDB from './config/db.js';
 import ticketRoutes from './routes/ticketRoutes.js';
 import setupSocket from './socket/socketHandler.js';
@@ -18,7 +19,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: '*', // Adjust for production
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS']
   }
 });
 
@@ -32,6 +33,7 @@ setupSocket(io);
 startSlaWorker();
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // Routes

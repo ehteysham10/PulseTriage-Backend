@@ -3,12 +3,10 @@ import IORedis from 'ioredis';
 import nodemailer from 'nodemailer';
 import Ticket from '../models/Ticket.js';
 
-// Connect to local Redis
-const connection = new IORedis({
-  host: 'localhost',
-  port: 6379,
-  maxRetriesPerRequest: null,
-});
+const connectionUrl = process.env.REDIS_URL;
+const connection = connectionUrl 
+  ? new IORedis(connectionUrl, { maxRetriesPerRequest: null })
+  : new IORedis({ host: 'localhost', port: 6379, maxRetriesPerRequest: null });
 
 /**
  * Initializes the Nodemailer test transporter.

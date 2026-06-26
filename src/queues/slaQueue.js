@@ -1,12 +1,10 @@
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
-// Connect to local Redis
-const connection = new IORedis({
-  host: 'localhost',
-  port: 6379,
-  maxRetriesPerRequest: null,
-});
+const connectionUrl = process.env.REDIS_URL;
+const connection = connectionUrl 
+  ? new IORedis(connectionUrl, { maxRetriesPerRequest: null })
+  : new IORedis({ host: 'localhost', port: 6379, maxRetriesPerRequest: null });
 
 // Create the SLA Escalation queue
 export const slaQueue = new Queue('SLA_Escalation', { connection });
