@@ -57,4 +57,7 @@ ticketSchema.index({ assignedTo: 1 });
 // Index for tracking lock timeouts efficiently
 ticketSchema.index({ lockedAt: 1 }, { partialFilterExpression: { lockedAt: { $type: "date" } } });
 
+// Text index for full-text search on title and description
+ticketSchema.index({ title: 'text', description: 'text' });
+
 export default mongoose.model('Ticket', ticketSchema);

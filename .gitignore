@@ -11,3 +11,5 @@ pnpm-debug.log*
 .idea/
 .vscode/
 *.log
+
+FRONTEND_INTEGRATION.md

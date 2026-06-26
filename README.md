@@ -1,5 +1,7 @@
 # PulseTriage Backend
 
+**🌍 Live API Endpoint:** [https://pulsetriage-backend.onrender.com](https://pulsetriage-backend.onrender.com)
+
 The robust backend API for PulseTriage, an AI-driven multi-agent helpdesk system designed for scalable, real-time customer support.
 
 ## 🚀 Features
