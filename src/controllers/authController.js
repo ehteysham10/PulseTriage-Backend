@@ -3,7 +3,8 @@ import User from '../models/User.js';
 
 // Helper to generate a 7-day JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  const secret = process.env.JWT_SECRET || 'pulsetriage_super_secret_jwt_key_2024';
+  return jwt.sign({ id: userId }, secret, { expiresIn: '7d' });
 };
 
 // ─────────────────────────────────────────────
@@ -100,7 +101,7 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error('[login]', error.message);
-    res.status(500).json({ message: 'Internal server error.', debugError: error.message, debugStack: error.stack });
+    res.status(500).json({ message: 'Internal server error.' });
   }
 };
 
