@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 import Ticket from '../models/Ticket.js';
 
 const connectionUrl = process.env.REDIS_URL;
-const connection = connectionUrl 
+const connection = connectionUrl
   ? new IORedis(connectionUrl, { maxRetriesPerRequest: null })
   : new IORedis({ host: 'localhost', port: 6379, maxRetriesPerRequest: null });
 
@@ -13,6 +13,14 @@ const connection = connectionUrl
  * Ethereal Email is used for fake testing to generate verifiable URLs.
  */
 async function createTestTransporter() {
+  // If running on Render (NODE_ENV=production), use jsonTransport 
+  // because Render's free tier blocks outbound SMTP ports (587, 465, 25).
+  if (process.env.NODE_ENV === 'production') {
+    return nodemailer.createTransport({
+      jsonTransport: true
+    });
+  }
+
   const testAccount = await nodemailer.createTestAccount();
   return nodemailer.createTransport({
     host: 'smtp.ethereal.email',
@@ -30,14 +38,14 @@ async function createTestTransporter() {
  */
 export const startSlaWorker = () => {
   console.log('[SLA Worker] Initializing and connecting to Redis...');
-  
+
   const worker = new Worker('SLA_Escalation', async (job) => {
     const { ticketId } = job.data;
     console.log(`[SLA Worker] Job triggered for ticket ${ticketId}. Checking status...`);
 
     try {
       const ticket = await Ticket.findById(ticketId);
-      
+
       if (!ticket) {
         console.log(`[SLA Worker] Ticket ${ticketId} not found.`);
         return;
@@ -46,7 +54,7 @@ export const startSlaWorker = () => {
       // If the ticket is still 'Open', it means no one has started working on it
       if (ticket.status === 'Open') {
         console.log(`[SLA Worker] URGENT: Ticket ${ticketId} is still 'Open' after SLA timeframe! Escalating...`);
-        
+
         const transporter = await createTestTransporter();
         const info = await transporter.sendMail({
           from: '"PulseTriage SLA Monitor" <sla@pulsetriage.local>',
@@ -57,7 +65,12 @@ export const startSlaWorker = () => {
         });
 
         console.log('[SLA Worker] Escalation email sent successfully.');
-        console.log(`[SLA Worker] Ethereal Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+
+        if (process.env.NODE_ENV === 'production') {
+          console.log(`[SLA Worker] Email JSON payload logged due to Render port blocks.`);
+        } else {
+          console.log(`[SLA Worker] Ethereal Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+        }
       } else {
         console.log(`[SLA Worker] Ticket ${ticketId} is currently '${ticket.status}'. No escalation needed.`);
       }
