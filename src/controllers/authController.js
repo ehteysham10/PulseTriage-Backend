@@ -126,8 +126,8 @@ export const getPendingAgents = async (req, res) => {
 // ─────────────────────────────────────────────
 export const getAllAgents = async (req, res) => {
   try {
-    const agents = await User.find({ role: 'Agent' })
-      .select('username name email approvalStatus createdAt');
+    const agents = await User.find({ isSuperAdmin: { $ne: true } })
+      .select('username name email role approvalStatus createdAt');
     res.json({ count: agents.length, agents });
   } catch (error) {
     console.error('[getAllAgents]', error.message);
